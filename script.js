@@ -1,3 +1,5 @@
+const cards = document.querySelectorAll("div.card")
+console.log(cards);
 
 
 const gameBoard = (function(){
@@ -50,57 +52,41 @@ const gameBoard = (function(){
 
     const visualize = ()=>{
         for (let y=0; y<3; y++){
-            console.log(board[y][0] + ' ' + board[y][1] + ' ' + board[y][2])
-            console.log('_____')
+            for (let x=0; x<3; x++){
+                const card = cards.item(y*3+x);
+                card.textContent = board[y][x] == '.' ? '' : board[y][x];
+            }
         }
     }
     return {placeX, placeO, wipe, checkWin, visualize}
 })();
 
 const gameHandler = (function(){
-    let board = gameBoard;
-    const playGame = ()=>{
-        console.log("new game:")
-        gameBoard.wipe()
-        let tick = 0;
-        let turn = tick;
-        while (!gameBoard.checkWin() && tick < 9){
-            console.log(`player ${tick+1} move:`)
-            let px = prompt("x position?: ")
-            let py = prompt("y position?: ")
-            if (turn){
-                while(!gameBoard.placeX(--px,--py)){
-                    px = prompt("x position?: ");
-                    py = prompt("y position?: ");
-                }
-            } else {
-                while(!gameBoard.placeO(--px,--py)){
-                    px = prompt("x position?: ");
-                    py = prompt("y position?: ");
-                }
-            }
-            gameBoard.visualize();
-            tick++;
-            turn = tick%2;
+    let tick = 0;
+    const markTile = (num)=>{
+        const row = Math.floor((num-1)/3);
+        const column = (num-1)%3;
+        if (tick%2 == 0){
+            if (!gameBoard.placeX(column, row)) return false;
+        } else {
+            if (!gameBoard.placeO(column, row)) return false;
+        }   
+        if(gameBoard.checkWin() != false){
+            gameBoard.wipe();
+            tick = 0;
+        };
+        if(tick >= 9){
+            gameBoard.wipe();
+            tick = 0;
         }
-        if (!gameBoard.checkWin()){
-            console.log('tie!');
-            return;
-        }
-        console.log(`player ${gameBoard.checkWin() == 'o' ? 1 : 2} wins`);
-        return;
+        gameBoard.visualize();
+        tick++;
     }
-    return {playGame}
+    return {markTile}
 })();
 
-let killswitch = true;
-while (killswitch){
-    let win = gameHandler.playGame();
-    if (win){
-        let ans = prompt('press [enter] to play again: ')
-        if (!ans){
-            killswitch = false;
-            break;
-        }
-    }
-}
+cards.forEach(node =>{
+    node.addEventListener('click',()=>{
+        gameHandler.markTile(node.id)
+    })
+})
