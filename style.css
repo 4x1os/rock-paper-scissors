@@ -22,3 +22,7 @@
 .card:hover{
     background-color: gainsboro;
 }
+
+.reset{
+    display: none;
+}
